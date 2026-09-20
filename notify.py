@@ -94,7 +94,6 @@ def send_notification(status, repo_name, rom_link, channel_id, bot_token, msg_id
         lines.append(f"Download: <a href=\"https://drive.google.com/drive/folders/1B11DL6aX7ZUKfawxwT8Do1mfX9hoxINp?usp=sharing\">Google Drive</a>")
         lines.append("")
 
-    lines.append(f"Build ID: {build_id}")
     lines.append(f"Logs: <a href=\"{action_url}\">View GitHub</a>")
 
     message = "\n".join(lines)
