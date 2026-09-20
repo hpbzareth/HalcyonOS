@@ -98,7 +98,7 @@ elif [[ ${baserom_type} == 'br' ]];then
         done
 elif [[ ${is_base_rom_eu} == true ]];then
     unpack "Unpacking BASEROM [super.img]"
-    super_list=$(python3 bin/lpunpack.py --info build/baserom/super.img | grep "super:" | awk '{ print $5 }')
+    super_list=$(python3 bin/lpunpack.py --info -f json build/baserom/super.img | jq -r '.partition_table[].name')
     for i in ${super_list}; do
         if [[ $i == *_a ]];then
             i=${i%_a}
@@ -146,3 +146,4 @@ bash $work_dir/bin/package/patchpackage.sh
 
 
 find "$work_dir/build/baserom/images/" -exec touch -t 200901010000.00 {} + 2> /dev/null || true
+
