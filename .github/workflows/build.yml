@@ -7,10 +7,10 @@ on:
         description: 'URL of the ROM to build'
         required: true
       builder_name:
-        description: 'TÃªn ngÆ°á»i build'
+        description: 'Ten nguoi build'
         required: false
       builder_id:
-        description: 'ID ngÆ°á»i build'
+        description: 'ID nguoi build'
         required: false
       
 jobs:
@@ -20,14 +20,6 @@ jobs:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@main
-        
-      - name: Start Notify
-        run: |
-          pip install requests
-          python notify.py start "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
-
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -39,12 +31,20 @@ jobs:
 
       - name: Clean All Unused file,application
         run: |
-          docker rmi `docker images -q` || true
+          docker rmi \docker images -q\ || true
           sudo apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell mysql* php* || true
           sudo apt-get -y autoremove --purge || true
           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php || true
           sudo apt-get -y autoclean || true
           sudo apt-get clean || true
+
+      - name: Checkout repository
+        uses: actions/checkout@main
+        
+      - name: Start Notify
+        run: |
+          pip install requests
+          python notify.py start "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
 
       - name: Set up Time
         run: |
@@ -96,6 +96,3 @@ jobs:
         if: failure()
         run: |
           python notify.py fail "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
-          
-
-
