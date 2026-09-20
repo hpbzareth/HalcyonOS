@@ -812,12 +812,12 @@ class LpUnpack(object):
     def unpack(self):
         try:
             if SparseImage(self._fd).check():
-                print('Sparse image detected.')
-                print('Process conversion to non sparse image ....', end='', flush=True)
+                print('Sparse image detected.', file=sys.stderr)
+                print('Process conversion to non sparse image ....', end='', flush=True, file=sys.stderr)
                 unsparse_file = SparseImage(self._fd).unsparse()
                 self._fd.close()
                 self._fd = open(str(unsparse_file), 'rb')
-                print('[ok]')
+                print('[ok]', file=sys.stderr)
 
             self._fd.seek(0)
             metadata = self._read_metadata()
@@ -867,7 +867,7 @@ def create_parser():
         '-p',
         '--partition',
         dest='NAME',
-        type=lambda x: re.split("\W+", x),
+        type=lambda x: re.split(r"\W+", x),
         help='Extract the named partition. This can be specified multiple times or through the delimiter [","  ":"]'
     )
     _parser.add_argument(
