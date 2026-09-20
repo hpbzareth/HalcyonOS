@@ -163,20 +163,28 @@ extract_partition() {
     part_name=$(basename ${part_img})
     target_dir=$2
     if [[ -f ${part_img} ]]; then 
-        if [[ $(${WORK_DIR}/bin/Linux/x86_64/gettype -i ${part_img}) == "ext" ]]; then
+        img_size=$(stat -c%s ${part_img})
+        if [[ "$img_size" -eq 0 ]]; then
+            unpack "Skipping 0-byte dummy partition: ${part_name}"
+            rm -rf ${part_img}
+            return
+        fi
+        
+        img_type=$(${WORK_DIR}/bin/Linux/x86_64/gettype -i ${part_img})
+        if [[ $img_type == "ext" ]]; then
             pack_type="EXT"
             echo $pack_type > ${WORK_DIR}/bin/ddevice/fstype.txt
             sudo python3 ${WORK_DIR}/bin/imgextractor/imgextractor.py ${part_img} ${target_dir} >/dev/null 2>&1 || { error "Extracting ${part_name} failed."; exit 1; }
             unpack "File ${part_name} extracted."
             rm -rf ${part_img}      
-        elif [[ $(${WORK_DIR}/bin/Linux/x86_64/gettype -i ${part_img}) == "erofs" ]]; then
+        elif [[ $img_type == "erofs" ]]; then
             pack_type="EROFS"
             echo $pack_type > ${WORK_DIR}/bin/ddevice/fstype.txt
             extract.erofs -x -i ${part_img} -o ${target_dir} > /dev/null 2>&1 || { error "Extracting ${part_name} failed." ; exit 1; }
             unpack "File ${part_name} extracted."
             rm -rf ${part_img}
         else
-            error "Unable to handle img, exit."
+            error "Unable to handle img: ${part_name}, type: '${img_type}', size: ${img_size} bytes."
             exit 1
         fi
     fi    
