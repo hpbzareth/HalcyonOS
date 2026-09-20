@@ -1,0 +1,77 @@
+#!/bin/bash
+# Get the absolute path of the project root
+ROOT_DIR=$(realpath "$(dirname "$0")/../../../../")
+HMA_DIR=$(realpath "$(dirname "$0")")
+
+source "$ROOT_DIR/functions.sh"
+
+UNPACK="java -jar $HMA_DIR/bbootimg.jar unpack"
+REPACK="java -jar $HMA_DIR/bbootimg.jar pack"
+CLEAN="java -jar $HMA_DIR/bbootimg.jar clear"
+
+# Ensure tools are executable
+chmod -R +x "$HMA_DIR/aosp" 2>/dev/null
+
+cd "$HMA_DIR" || exit 1
+
+# Patch boot.img
+if [ -f "$ROOT_DIR/build/baserom/images/boot.img" ]; then
+    patch "Found boot.img! Patching..."
+    cp -f "$ROOT_DIR/build/baserom/images/boot.img" "$HMA_DIR/boot.img"
+    
+    if [ -f "boot.img" ]; then
+        patch "Start Process..."
+        $UNPACK >/dev/null 2>&1
+        
+        # Ensure .clear file is in current directory for bbootimg
+        if [ -f "build/unzip_boot/intermediate/boot.img.clear" ]; then
+            cp -f "build/unzip_boot/intermediate/boot.img.clear" .
+        fi
+
+        # Disable AVB in the unpacked ramdisk
+        # bbootimg unpacks to build/unzip_boot/root
+        disable_avb_verify "$HMA_DIR/build/unzip_boot" >/dev/null 2>&1
+        
+        $REPACK >/dev/null 2>&1
+        
+        if [ -f "boot.img.signed" ]; then
+            mv -f "boot.img.signed" "boot.img"
+            cp -f "boot.img" "$ROOT_DIR/build/baserom/images/boot.img"
+            patch "Patching Boot Successfully!"
+        else
+            # Some versions might not produce .signed, check if boot.img was updated
+            cp -f "boot.img" "$ROOT_DIR/build/baserom/images/boot.img"
+            warn "boot.img.signed not found, using boot.img"
+        fi
+        $CLEAN >/dev/null 2>&1
+    fi
+fi
+
+# Patch vendor_boot.img
+if [ -f "$ROOT_DIR/build/baserom/images/vendor_boot.img" ]; then
+    patch "Found vendor_boot.img! Patching..."
+    cp -f "$ROOT_DIR/build/baserom/images/vendor_boot.img" "$HMA_DIR/vendor_boot.img"
+    
+    if [ -f "vendor_boot.img" ]; then
+        patch "Start Process..."
+        $UNPACK >/dev/null 2>&1
+        
+        if [ -f "build/unzip_boot/intermediate/vendor_boot.img.clear" ]; then
+            cp -f "build/unzip_boot/intermediate/vendor_boot.img.clear" .
+        fi
+
+        disable_avb_verify "$HMA_DIR/build/unzip_boot" >/dev/null 2>&1
+        
+        $REPACK >/dev/null 2>&1
+        
+        if [ -f "vendor_boot.img.signed" ]; then
+            mv -f "vendor_boot.img.signed" "vendor_boot.img"
+            cp -f "vendor_boot.img" "$ROOT_DIR/build/baserom/images/vendor_boot.img"
+            patch "Patching Vendor Boot Successfully!"
+        else
+            cp -f "vendor_boot.img" "$ROOT_DIR/build/baserom/images/vendor_boot.img"
+            warn "vendor_boot.img.signed not found, using vendor_boot.img"
+        fi
+        $CLEAN >/dev/null 2>&1
+    fi
+fi

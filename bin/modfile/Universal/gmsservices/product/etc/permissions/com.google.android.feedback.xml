@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Date : Tue Oct  8 15:29:54 WIB 2024
+  ~ 
+  ~ Copyright (C) 2020 - 2024 The Litegapps Project
+  ~
+-->
+<!--
+This XML file declares which signature|privileged permissions should be granted to privileged
+applications on GMS or Google-branded devices.
+It allows additional grants on top of privapp-permissions-platform.xml
+-->
+<permissions>
+  <privapp-permissions package="com.google.android.feedback">
+    <permission name="android.permission.READ_LOGS"/>
+    <permission name="android.permission.PACKAGE_USAGE_STATS"/>
+    <permission name="android.permission.INTERNET"/>
+    <permission name="android.permission.ACCESS_NETWORK_STATE"/>
+    <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
+    <permission name="android.permission.QUERY_ALL_PACKAGES"/>
+    <permission name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
+  </privapp-permissions>
+</permissions>

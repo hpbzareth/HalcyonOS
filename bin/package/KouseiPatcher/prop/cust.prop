@@ -1,0 +1,9 @@
+ro.boot.flash.locked
+ro.boot.vbmeta.device_state
+ro.boot.verifiedbootstate
+ro.boot.veritymode
+vendor.boot.verifiedbootstate
+vendor.boot.vbmeta.device_state
+ro.crypto.state
+ro.secureboot.lockstate
+ro.boot.realmebootstate

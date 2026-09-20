@@ -1,0 +1,94 @@
+#!/sbin/sh
+set -e
+ZIP=$3
+OUTFD=/proc/self/fd/$2;
+ui_print() { echo -e "ui_print $1\nui_print" > $OUTFD; }
+
+if [ -d /tmp/maianh ];then rm -r /tmp/maianh ; fi
+mkdir -p /tmp/maianh/bin
+unzip "$ZIP" META-INF/bin/* -d /tmp/maianh
+mv /tmp/maianh/META-INF/bin/* /tmp/maianh/bin
+unzip "$ZIP" META-INF/Data/Structure -d /tmp/maianh
+unzip "$ZIP" META-INF/Data/DeviceCode -d /tmp/maianh
+unzip "$ZIP" META-INF/Data/DeviceName -d /tmp/maianh
+unzip "$ZIP" META-INF/Data/AndroidVer -d /tmp/maianh
+unzip "$ZIP" META-INF/Data/Region -d /tmp/maianh
+unzip "$ZIP" META-INF/Data/RomBased -d /tmp/maianh
+unzip "$ZIP" META-INF/Data/Version -d /tmp/maianh
+unzip "$ZIP" META-INF/Data/Types -d /tmp/maianh
+unzip "$ZIP" META-INF/Data/Chip -d /tmp/maianh
+chmod -R 0777 /tmp/maianh
+structure=$(cat '/tmp/maianh/META-INF/Data/Structure')
+codename=$(cat '/tmp/maianh/META-INF/Data/DeviceCode')
+name=$(cat '/tmp/maianh/META-INF/Data/DeviceName')
+android=$(cat '/tmp/maianh/META-INF/Data/AndroidVer')
+region=$(cat '/tmp/maianh/META-INF/Data/Region')
+based=$(cat '/tmp/maianh/META-INF/Data/RomBased')
+version=$(cat '/tmp/maianh/META-INF/Data/Version')
+Types=$(cat '/tmp/maianh/META-INF/Data/Types')
+Chip=$(cat '/tmp/maianh/META-INF/Data/Chip')
+partitionPath="/dev/block/bootdevice/by-name"
+
+export PATH=/tmp/maianh/bin:$PATH
+
+ui_print "> Check infomation... "
+
+if [ "$Chip" != "Snapdragon" ]; then
+  echo "Device is mediatek chip and is not supported to be install from recovery!"
+  exit 1
+fi
+
+device=$(getprop ro.product.device)
+if [ "$device" != "$codename" ]; then
+   echo "Device is not $codename! Device is: $device"
+   exit 1
+fi
+
+ui_print "------------------------------------------------"
+ui_print "Device Name: $name"
+ui_print "Codename: $codename"
+ui_print "Android: $android"
+ui_print "Based: $based"
+ui_print "Region: $region"
+ui_print "Version: $version"
+ui_print "------------------------------------------------"
+ui_print " "
+
+ui_print "> Starting Installing... "
+ui_print " "
+ui_print "----- Flashing firmware -----"
+ui_print " "
+
+for imageFile in $(7zz l "$ZIP" | grep images | grep -o "/.*" ); do
+	partition=${imageFile##*/}
+	partition=${partition%%.*}
+	if [ "$partition" == "cust" ]; then
+	    ui_print "> Flashing ${partition}"
+	    unzip -p "$ZIP" "images/cust.img" > "${partitionPath}/cust"
+	elif [ "$structure" == "VAB" ] ;then
+	    ui_print "> Flashing ${partition}_a"
+		unzip -p "$ZIP" "images${imageFile}" > "${partitionPath}/${partition}_a" 
+		ui_print "> Flashing ${partition}_b"
+		unzip -p "$ZIP" "images${imageFile}" > "${partitionPath}/${partition}_b" 
+	else
+	    ui_print "> Flashing ${partition}"
+		unzip -p "$ZIP" "images${imageFile}" > "${partitionPath}/${partition}"
+	fi
+done
+
+ui_print "----- Flashing super -----"
+
+for zstFile in $(7zz l "$ZIP" | grep -o "[a-z]*.img.zst"); do
+	partition=${zstFile%%.*}
+	ui_print "> Flashing ${partition} "
+	7zz x -so "$ZIP" "${zstFile}" | zstd -c -d > "${partitionPath}/${partition}" 
+done
+
+rm -rf /data/dalvik-cache/arm/*
+rm -rf /data/dalvik-cache/arm64/*
+
+ui_print "----- Install Success -----"
+ui_print " "
+ui_print "Try format data if not boot"
+
+exit 0

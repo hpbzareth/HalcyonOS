@@ -1,0 +1,4 @@
+<permissions>
+    <library name="com.google.android.maps"
+      file="/product/framework/com.google.android.maps.jar" />
+</permissions>

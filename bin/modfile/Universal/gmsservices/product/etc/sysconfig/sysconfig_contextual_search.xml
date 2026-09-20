@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <!-- enable contextual search features -->
+    <feature name="com.google.android.feature.CONTEXTUAL_SEARCH" />
+    <feature name="com.google.android.feature.CONTEXTUAL_SEARCH_LIVE_TRANSLATE" />
+</config>

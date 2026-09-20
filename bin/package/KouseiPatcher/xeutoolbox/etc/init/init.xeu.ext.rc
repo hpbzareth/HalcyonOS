@@ -1,0 +1,5 @@
+on property:sys.boot_completed=1
+    exec u:r:init:s0 root root -- /system_ext/xbin/resetprop ro.boot.flash.locked 1
+    exec u:r:init:s0 root root -- /system_ext/xbin/resetprop ro.boot.verifiedbootstate green
+    exec u:r:init:s0 root root -- /system_ext/xbin/resetprop ro.boot.veritymode enforcing
+    exec u:r:init:s0 root root -- /system_ext/xbin/resetprop ro.boot.vbmeta.device_state locked
