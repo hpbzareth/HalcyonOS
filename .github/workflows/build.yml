@@ -1,4 +1,4 @@
-﻿name: HalcyonOS ROM Build
+name: HalcyonOS ROM Build
 
 on:
   workflow_dispatch:
