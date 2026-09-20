@@ -91,7 +91,7 @@ def send_notification(status, repo_name, rom_link, channel_id, bot_token, msg_id
 
     if status.lower() == 'success':
         if output_zip: lines.append(f"File: {output_zip}")
-        lines.append(f"Download: <a href=\"https://drive.google.com/drive/folders/1B11DL6aX7ZUKfawxwT8Do1mfX9hoxINp?usp=sharing\">Google Drive</a>")
+        lines.append(f"Download: <a href=\"https://drive.google.com/drive/folders/1ZIHQhj327XFhQP3Je-2WtKUBRruxAfLT?usp=sharing\">Google Drive</a>")
         lines.append("")
 
     lines.append(f"Logs: <a href=\"{action_url}\">View GitHub</a>")
