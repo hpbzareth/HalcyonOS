@@ -34,7 +34,10 @@ def get_status_info(status):
     if status == 'pack': return "🗜️", "PACK", "Compressing to flashable zip..."
     if status == 'upload': return "☁️", "UPLOAD", "Uploading to Cloud..."
     if status == 'success': return "✅", "SUCCESS", "Build completed successfully!"
-    if status == 'fail': return "❌", "FAILED", "Error occurred during build!"
+    if status == 'fail': 
+        err_msg = read_file_if_exists("bin/ddevice/error_msg.txt")
+        desc = err_msg if err_msg else "Execution halted. Check GitHub logs for details."
+        return "❌", "FAILED", desc
     return "ℹ️", "UPDATE", status.upper()
 
 def get_progress_bar(status):

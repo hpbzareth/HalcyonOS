@@ -28,7 +28,9 @@ warn() {
 
 error() {
     if [ "$#" -eq 1 ] ; then
-        echo -e [ERROR] - $1
+        echo -e "[ERROR] - $1"
+        mkdir -p $WORK_DIR/bin/ddevice
+        echo "$1" > $WORK_DIR/bin/ddevice/error_msg.txt
     else
         echo "Usage: error <string>"
     fi
