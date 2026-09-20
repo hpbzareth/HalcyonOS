@@ -30,7 +30,7 @@ if [ "$(echo $baserom |grep miui_)" != "" ]; then
     device_code=$(basename $baserom |cut -d '_' -f 2)
     base_rom_code=$(echo "$baserom" | awk -F'_' '{print $3}')
 elif [ "$(echo $baserom |grep xiaomi.eu_)" != "" ]; then
-    device_code=$(basename $baserom |cut -d '_' -f 3)
+    device_code=$(basename $baserom | cut -d '_' -f 2)
     base_rom_code=$(echo "$baserom" | awk -F'_' '{print $3}')
 elif [ "$(echo $baserom | grep -E '.*-ota_full-.*')" != "" ]; then
     device_code=$(basename $baserom | cut -d '-' -f 1)
@@ -99,4 +99,6 @@ echo $base_rom_code > $work_dir/bin/ddevice/os_code.txt
 echo $device_code > $work_dir/bin/ddevice/device_code.txt
 echo $DEVICE_TYPE > $work_dir/bin/ddevice/device_type.txt
 echo $ROM_OS > $work_dir/bin/ddevice/rom_os.txt
+
+
 
