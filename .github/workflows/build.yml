@@ -1,0 +1,101 @@
+name: HalcyonOS ROM Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_url:
+        description: 'URL of the ROM to build'
+        required: true
+      builder_name:
+        description: 'T????n ng??????????i build'
+        required: false
+      builder_id:
+        description: 'ID ng??????????i build'
+        required: false
+      
+jobs:
+  Initialize:
+    runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        
+      - name: Start Notify
+        run: |
+          pip install requests
+          python notify.py start "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
+
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          swap-size-mb: 1024
+          root-reserve-mb: 512
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
+      - name: Clean All Unused file,application
+        run: |
+          docker rmi `docker images -q` || true
+          sudo apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell mysql* php* || true
+          sudo apt-get -y autoremove --purge || true
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php || true
+          sudo apt-get -y autoclean || true
+          sudo apt-get clean || true
+
+      - name: Set up Time
+        run: |
+          echo "Setting Vienam timezone"
+          sudo timedatectl set-timezone Asia/Ho_Chi_Minh
+          
+      - name: Install OpenJDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Stuff
+        run: |
+          sudo bash setup.sh
+        
+      - name: Giving permission
+        run: |
+          sudo chmod 777 -R *
+
+      - name: Build ROM...
+        env:
+          INPUT_URL: ${{ inputs.input_url }}
+        run: |
+          sudo -E bash build.sh "$INPUT_URL" "${{ github.repository }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
+
+      - name: Pack ROM...
+        run: |
+          python notify.py pack "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
+          sudo bash packROM.sh
+
+      - name: Setup Rclone...
+        run: |
+          cat << 'EOF' > rclone.conf
+          ${{ secrets.RCLONE_DRIVE_CONFIG }}
+          EOF
+          
+      - name: Upload ROM...
+        run: |
+          python notify.py upload "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
+          sudo -E bash uploadROM.sh
+      
+      - name: Success Notification
+        if: success()
+        run: |
+          python notify.py success "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
+
+      - name: Failure Notification
+        if: failure()
+        run: |
+          python notify.py fail "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
+          
+
+
