@@ -98,17 +98,22 @@ elif [[ ${baserom_type} == 'br' ]];then
         done
 elif [[ ${is_base_rom_eu} == true ]];then
     unpack "Unpacking BASEROM [super.img]"
-    super_list=$(python3 bin/lpunpack.py --info -f json build/baserom/super.img | jq -r '.partition_table[].name')
-    for i in ${super_list}; do
-        if [[ $i == *_a ]];then
-            i=${i%_a}
-            python3 bin/lpunpack.py -p ${i}_a build/baserom/super.img build/baserom/images >/dev/null 2>&1
-            mv build/baserom/images/${i}_a.img build/baserom/images/${i}.img 
-        else
-            python3 bin/lpunpack.py -p ${i} build/baserom/super.img build/baserom/images >/dev/null 2>&1
+    python3 bin/lpunpack.py build/baserom/super.img build/baserom/images
+    
+    super_list=""
+    for img in build/baserom/images/*.img; do
+        if [ -f "$img" ]; then
+            filename=$(basename "$img" .img)
+            if [[ $filename == *_a ]]; then
+                new_filename=${filename%_a}
+                mv "$img" "build/baserom/images/${new_filename}.img"
+                super_list="$super_list $new_filename"
+            elif [[ $filename != "super" ]]; then
+                super_list="$super_list $filename"
+            fi
         fi
     done
-    super_list=$(echo $super_list | sed 's/_a//g')
+    super_list=$(echo $super_list | xargs)
 fi
 
 for part in ${super_list}; do
