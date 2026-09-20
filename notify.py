@@ -71,37 +71,37 @@ def send_notification(status, repo_name, rom_link, channel_id, bot_token, msg_id
     builder_text = builder_name if builder_name else "HalcyonOS System"
 
     lines = [
-        f"{icon} *HALCYON OS BUILDER*",
+        f"{icon} <b>HALCYON OS BUILDER</b>",
         f"━━━━━━━━━━━━━━━━━━",
-        f"👤 *Builder:* {builder_text}"
+        f"👤 <b>Builder:</b> {builder_text}"
     ]
 
-    if is_available(device_name): lines.append(f"📱 *Device:* {device_name}")
-    if is_available(codename): lines.append(f"🏷️ *Codename:* {codename}")
-    if is_available(version_rom): lines.append(f"💿 *OS Version:* {version_rom}")
+    if is_available(device_name): lines.append(f"📱 <b>Device:</b> <code>{device_name}</code>")
+    if is_available(codename): lines.append(f"🏷️ <b>Codename:</b> <code>{codename}</code>")
+    if is_available(version_rom): lines.append(f"💿 <b>OS Version:</b> <code>{version_rom}</code>")
         
     lines.append(f"━━━━━━━━━━━━━━━━━━")
-    lines.append(f"📌 *Status:* {status_title}")
-    lines.append(f"📝 *Details:* _{status_desc}_")
-    lines.append(f"⏳ *Progress:* {get_progress_bar(status)}")
+    lines.append(f"📌 <b>Status:</b> {status_title}")
+    lines.append(f"📝 <b>Details:</b> <i>{status_desc}</i>")
+    lines.append(f"⏳ <b>Progress:</b> <code>{get_progress_bar(status)}</code>")
     lines.append("")
 
     if status.lower() == 'success':
-        if output_zip: lines.append(f"📦 *File:* {output_zip}")
-        lines.append(f"🔗 *Download:* [Google Drive](https://drive.google.com/drive/folders/1B11DL6aX7ZUKfawxwT8Do1mfX9hoxINp?usp=sharing)")
+        if output_zip: lines.append(f"📦 <b>File:</b> <code>{output_zip}</code>")
+        lines.append(f"🔗 <b>Download:</b> <a href=\"https://drive.google.com/drive/folders/1B11DL6aX7ZUKfawxwT8Do1mfX9hoxINp?usp=sharing\">Google Drive</a>")
         lines.append("")
 
-    lines.append(f"🆔 *Build ID:* {build_id}")
-    lines.append(f"📊 *Logs:* [View on GitHub]({action_url})")
+    lines.append(f"🆔 <b>Build ID:</b> <code>{build_id}</code>")
+    lines.append(f"📊 <b>Logs:</b> <a href=\"{action_url}\">View on GitHub</a>")
 
     message = "\n".join(lines)
 
     if msg_id:
         url = f"https://api.telegram.org/bot{bot_token}/editMessageText"
-        payload = {"chat_id": channel_id, "message_id": msg_id, "text": message, "parse_mode": "Markdown", "disable_web_page_preview": True}
+        payload = {"chat_id": channel_id, "message_id": msg_id, "text": message, "parse_mode": "HTML", "disable_web_page_preview": True}
     else:
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        payload = {"chat_id": channel_id, "text": message, "parse_mode": "Markdown", "disable_web_page_preview": True}
+        payload = {"chat_id": channel_id, "text": message, "parse_mode": "HTML", "disable_web_page_preview": True}
 
     try:
         response = requests.post(url, json=payload)
@@ -115,8 +115,8 @@ def send_notification(status, repo_name, rom_link, channel_id, bot_token, msg_id
             
         if status.lower() in ['success', 'fail'] and builder_id:
             pm_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-            pm_text = f"✅ *BUILD SUCCESSFUL!*\n\n{message}" if status.lower() == 'success' else f"❌ *BUILD FAILED!*\n\n{message}\n\nPlease check the GitHub logs for details."
-            pm_payload = {"chat_id": builder_id, "text": pm_text, "parse_mode": "Markdown", "disable_web_page_preview": True}
+            pm_text = f"✅ <b>BUILD SUCCESSFUL!</b>\n\n{message}" if status.lower() == 'success' else f"❌ <b>BUILD FAILED!</b>\n\n{message}\n\nPlease check the GitHub logs for details."
+            pm_payload = {"chat_id": builder_id, "text": pm_text, "parse_mode": "HTML", "disable_web_page_preview": True}
             try: requests.post(pm_url, json=pm_payload)
             except Exception: pass
 
