@@ -36,7 +36,7 @@ echo "$name" > $work_dir/bin/script2flash/META-INF/Data/DeviceName
 echo "$systemtype" > $work_dir/bin/script2flash/META-INF/Data/Types
 
 
-echo "------------------Nothings BuildInfo ---------------------"
+echo "------------------HalcyonOS BuildInfo ---------------------"
 echo "- Device Name:"$name""
 echo "- Codename:"$device_code""
 echo "- Xiaomi Version:"$rom_os""  

@@ -6,7 +6,6 @@ regionTYPE=$(cat $work_dir/bin/ddevice/device_type.txt)
 MAIN_FOLDER="$work_dir/build/baserom/images"
 
 if [[ $regionTYPE == "China" ]]; then 
-  aria2c -q -d "$work_dir/bin/modfile/Universal/gmsservices/product/priv-app/GoogleVelvet_CTS/" -o GoogleVelvet_CTS.apk https://github.com/tiencv2006/nothingsvn_oplus-toolbuild/releases/download/oplus/GoogleVelvet_CTS.apk && info "Get File Successfully"
   cp -rf $work_dir/bin/modfile/Universal/gmsservices/product/* $work_dir/build/baserom/images/product/
   cp -rf $work_dir/bin/modfile/Universal/gmsservices/system_ext/* $work_dir/build/baserom/images/system_ext/
   echo "ro.miui.has_gmscore=1" >> $work_dir/build/baserom/images/system/system/build.prop

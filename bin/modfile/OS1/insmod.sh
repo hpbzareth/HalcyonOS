@@ -2,9 +2,9 @@ work_dir=$(pwd)
 source $work_dir/functions.sh
 rom_os=$(cat $work_dir/bin/ddevice/rom_os.txt)
 
-if [[ $rom_os == "OS2" ]]; then
-mods "Starting Apply OS2 Custom Mods File..."
-TARGET_DIR="$work_dir/bin/modfile/OS2"
+if [[ $rom_os == "OS1" ]]; then
+mods "Starting Apply OS1 Custom Mods File..."
+TARGET_DIR="$work_dir/bin/modfile/OS1"
 noexecute=( "insmod" )
 
 find "$TARGET_DIR" -type f -name "*.sh" | while read -r script; do

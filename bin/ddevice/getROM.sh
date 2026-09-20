@@ -3,25 +3,29 @@
 baserom="$1"
 work_dir=$(pwd)
 source $work_dir/functions.sh
+
 # Check whether it is a local package or a link
 if [ ! -f "${baserom}" ] && [ "$(echo $baserom |grep http)" != "" ]; then
     info "Download link detected, starting a download..."
     aria2c --max-download-limit=1024M --file-allocation=none -s10 -x10 -j10 --content-disposition -U "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" "${baserom}"
+    # Strip query string to get the clean filename
     baserom=$(basename ${baserom} | cut -d'?' -f1)
-    if [ -f $work_dir/topaz-ota_full-OS3.0.2.0.WMGCNXM-user-16.0-b487e82659.zip ]; then
-        baserom="topaz-ota_full-OS3.0.2.0.WMGCNXM-user-16.0-b487e82659.zip"
-        info "BASEROM: ${baserom}"
-    elif [ -f $work_dir/munch-ota_full-OS2.0.215.0.VLMCNXM-user-15.0-7df6d5ee94.zip ]; then
-        baserom="munch-ota_full-OS2.0.215.0.VLMCNXM-user-15.0-7df6d5ee94.zip"
-        info "BASEROM: ${baserom}"
-    elif [ ! -f "${baserom}" ]; then
-        error "Download error!"
+    # If the clean basename doesn't exist, scan for any newly downloaded zip
+    if [ ! -f "$work_dir/${baserom}" ]; then
+        downloaded=$(find "$work_dir" -maxdepth 1 -name "*.zip" -newer "$work_dir/functions.sh" 2>/dev/null | head -n1)
+        if [ -n "$downloaded" ]; then
+            baserom=$(basename "$downloaded")
+            info "Detected downloaded file: ${baserom}"
+        else
+            error "Download error! No zip file found after download."
+            exit 1
+        fi
     fi
 elif [ -f "${baserom}" ]; then
     info "BASEROM: ${baserom}"
 else
     error "BASEROM: Invalid parameter"
-    exit
+    exit 1
 fi
 
 
@@ -39,13 +43,10 @@ elif [ "$(echo $baserom | grep -E '.*-ota_full-.*')" != "" ]; then
     # Transform device_code
     device_code=$(echo $device_code | awk -F '_' '{
         if (NF == 1) {
-            # If one part, e.g., shennong
             print toupper($1)
         } else if (NF == 2) {
-            # If two parts, e.g., tapas_global
             print toupper($1) toupper(substr($2, 1, 1)) substr($2, 2)
         } else if (NF == 3) {
-            # If three parts, e.g., houji_tw_global
             printf toupper($1) toupper($2) toupper(substr($3, 1, 1)) substr($3, 2)
         }
     }')
@@ -78,7 +79,7 @@ else
     DEVICE_TYPE="China"
 fi
 
-#Check MIUI or Hyper
+# Check OS version from base_rom_code
 if echo "$base_rom_code" | grep -q "OS1"; then
     ROM_OS="OS1"
 elif echo "$base_rom_code" | grep -q "OS2"; then
@@ -99,9 +100,4 @@ echo $base_rom_code > $work_dir/bin/ddevice/os_code.txt
 echo $device_code > $work_dir/bin/ddevice/device_code.txt
 echo $DEVICE_TYPE > $work_dir/bin/ddevice/device_type.txt
 echo $ROM_OS > $work_dir/bin/ddevice/rom_os.txt
-
-
-
-
 echo $device_f > $work_dir/bin/ddevice/device_f.txt
-

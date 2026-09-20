@@ -4,8 +4,10 @@
 # Environment initialization and tool checks
 init_env() {
   # Allow overriding from environment before calling init_env
-  : "${TOOLS_DIR:=/home/runner/work/nothingsvn_xiaomi-toolbuild/nothingsvn_xiaomi-toolbuild/bin/apktool}"
-  : "${WORK_DIR:=/home/runner/work/nothingsvn_xiaomi-toolbuild/nothingsvn_xiaomi-toolbuild}"
+  local _work_dir
+  _work_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+  : "${TOOLS_DIR:=${_work_dir}/bin/apktool}"
+  : "${WORK_DIR:=${_work_dir}}"
   : "${BACKUP_DIR:=${WORK_DIR}/backup}"
   mkdir -p "$BACKUP_DIR"
 }
