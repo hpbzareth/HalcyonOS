@@ -100,6 +100,9 @@ elif [[ ${is_base_rom_eu} == true ]];then
     unpack "Unpacking BASEROM [super.img]"
     python3 bin/lpunpack.py build/baserom/super.img build/baserom/images
     
+    # Delete any dummy _b partitions extracted from super.img
+    rm -f build/baserom/images/*_b.img
+    
     super_list=""
     for img in build/baserom/images/*.img; do
         if [ -f "$img" ]; then
@@ -113,7 +116,7 @@ elif [[ ${is_base_rom_eu} == true ]];then
             fi
         fi
     done
-    super_list=$(echo $super_list | xargs)
+    super_list=$(echo $super_list | tr ' ' '\n' | sort -u | xargs)
 fi
 
 for part in ${super_list}; do
