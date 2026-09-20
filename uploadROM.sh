@@ -39,15 +39,17 @@ repack "Compressing super.img"
 zstd --rm $work_dir/build/baserom/images/super.img -o $work_dir/build/baserom/images/super.img.zst > /dev/null 2>&1
 
 repack "Generating flashing script"
-if [[ ${baserom_type} == 'payload' ]]; then
-    mkdir -p $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
-	mv -f $work_dir/build/baserom/images/super.img.zst $work_dir/out/${os_type}_${device_code}_${base_rom_code}/
-    rm -f $work_dir/build/baserom/images/{abl,xbl,xbl_config,xbl_ramdump,tz,hyp,devcfg,keymaster,qupfw,uefisecapp,modem,dsp,bluetooth,cpucp,shrm,logo,featenabler}.img 2>/dev/null || true; mv -f $work_dir/build/baserom/images/*.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/ 2>/dev/null || true; mv -f $work_dir/build/baserom/images/vendor_boot.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/ 2>/dev/null || true; mv -f $work_dir/build/baserom/images/cust.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/ 2>/dev/null || true
-elif [[ ${baserom_type} == 'br' ]]; then
-    mkdir -p $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
-    # Firmware removed
-    mv -f $work_dir/build/baserom/images/super.img.zst $work_dir/out/${os_type}_${device_code}_${base_rom_code}/
-fi
+mkdir -p $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
+
+# Remove firmware images (user requested)
+rm -f $work_dir/build/baserom/images/{abl,xbl,xbl_config,xbl_ramdump,tz,hyp,devcfg,keymaster,qupfw,uefisecapp,modem,dsp,bluetooth,cpucp,shrm,logo,featenabler,cmnlib,cmnlib64,tzdev,storsec,aop,multiimgoem,imagefv,apdp,msadp}.img 2>/dev/null || true
+rm -f $work_dir/build/baserom/images/firmware* 2>/dev/null || true
+
+# Move compressed super
+mv -f $work_dir/build/baserom/images/super.img.zst $work_dir/out/${os_type}_${device_code}_${base_rom_code}/ 2>/dev/null || true
+
+# Move all remaining images (boot, init_boot, vendor_boot, recovery, cust, etc.)
+mv -f $work_dir/build/baserom/images/*.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/ 2>/dev/null || true
 
 # generate dynamic script
 cp -rf $work_dir/bin/script2flash/META-INF $work_dir/out/${os_type}_${device_code}_${base_rom_code}/
