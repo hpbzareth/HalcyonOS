@@ -102,3 +102,6 @@ echo $ROM_OS > $work_dir/bin/ddevice/rom_os.txt
 
 
 
+
+echo $device_f > $work_dir/bin/ddevice/device_f.txt
+
