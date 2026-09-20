@@ -1,4 +1,4 @@
-name: HalcyonOS ROM Build
+﻿name: HalcyonOS ROM Build
 
 on:
   workflow_dispatch:
@@ -7,10 +7,10 @@ on:
         description: 'URL of the ROM to build'
         required: true
       builder_name:
-        description: 'Tên người build'
+        description: 'TÃªn ngÆ°á»i build'
         required: false
       builder_id:
-        description: 'ID người build'
+        description: 'ID ngÆ°á»i build'
         required: false
       
 jobs:
@@ -20,6 +20,14 @@ jobs:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        
+      - name: Start Notify
+        run: |
+          pip install requests
+          python notify.py start "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
+
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -37,14 +45,6 @@ jobs:
           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php || true
           sudo apt-get -y autoclean || true
           sudo apt-get clean || true
-
-      - name: Checkout repository
-        uses: actions/checkout@main
-
-      - name: Start Notify
-        run: |
-          pip install requests
-          python notify.py start "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
 
       - name: Set up Time
         run: |
@@ -97,4 +97,5 @@ jobs:
         run: |
           python notify.py fail "${{ github.repository }}" "${{ inputs.input_url }}" "xiaomi" "${{ inputs.builder_name }}" "${{ inputs.builder_id }}"
           
+
 
