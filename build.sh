@@ -100,23 +100,23 @@ elif [[ ${is_base_rom_eu} == true ]];then
     unpack "Unpacking BASEROM [super.img]"
     python3 bin/lpunpack.py build/baserom/super.img build/baserom/images
     
-    # Delete any dummy _b partitions extracted from super.img
-    rm -f build/baserom/images/*_b.img
+    # Known filesystem partitions to process (ext4/erofs). Raw partitions like abl, boot, etc. are excluded.
+    fs_partitions="system vendor product odm system_ext mi_ext vendor_dlkm system_dlkm odm_dlkm"
     
     super_list=""
-    for img in build/baserom/images/*.img; do
-        if [ -f "$img" ]; then
-            filename=$(basename "$img" .img)
-            if [[ $filename == *_a ]]; then
-                new_filename=${filename%_a}
-                mv "$img" "build/baserom/images/${new_filename}.img"
-                super_list="$super_list $new_filename"
-            elif [[ $filename != "super" ]]; then
-                super_list="$super_list $filename"
-            fi
+    for part in $fs_partitions; do
+        # Check for slot-suffixed _a variant first
+        if [ -f "build/baserom/images/${part}_a.img" ]; then
+            mv "build/baserom/images/${part}_a.img" "build/baserom/images/${part}.img"
+        fi
+        # Remove any _b variant
+        rm -f "build/baserom/images/${part}_b.img"
+        # Only add to list if the file exists and is > 0 bytes
+        if [ -f "build/baserom/images/${part}.img" ] && [ -s "build/baserom/images/${part}.img" ]; then
+            super_list="$super_list $part"
         fi
     done
-    super_list=$(echo $super_list | tr ' ' '\n' | sort -u | xargs)
+    super_list=$(echo $super_list | xargs)
 fi
 
 for part in ${super_list}; do
