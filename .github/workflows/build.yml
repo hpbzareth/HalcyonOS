@@ -28,15 +28,17 @@ jobs:
           remove-dotnet: 'true'
           remove-android: 'true'
           remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
 
       - name: Clean All Unused file,application
         run: |
-          docker rmi \docker images -q\ || true
           sudo apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell mysql* php* || true
           sudo apt-get -y autoremove --purge || true
-          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php || true
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /usr/local/lib/android /opt/ghc || true
           sudo apt-get -y autoclean || true
           sudo apt-get clean || true
+          df -h
 
       - name: Checkout repository
         uses: actions/checkout@main
@@ -48,7 +50,7 @@ jobs:
 
       - name: Set up Time
         run: |
-          echo "Setting Vienam timezone"
+          echo "Setting Vietnam timezone"
           sudo timedatectl set-timezone Asia/Ho_Chi_Minh
           
       - name: Install OpenJDK
