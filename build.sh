@@ -35,19 +35,34 @@ python3 $work_dir/notify.py download "$repo_name" "$baserom" "$prefix_id" "$buil
 source "$work_dir/bin/ddevice/getROM.sh" "$baserom"
 
 python3 $work_dir/notify.py unpack "$repo_name" "$baserom" "$prefix_id" "$builder_name" "$builder_id"
-if unzip -l ${baserom} | grep -q "payload.bin"; then
+# Fallback: if baserom path not found, scan for latest downloaded zip
+if [[ ! -f "$baserom" ]]; then
+    found_zip=$(ls -S $work_dir/*.zip 2>/dev/null | head -n 1)
+    if [[ -n "$found_zip" && -f "$found_zip" ]]; then
+        baserom="$found_zip"
+    else
+        clean_name=$(basename "${baserom%%\?*}")
+        if [[ -f "$work_dir/$clean_name" ]]; then
+            baserom="$work_dir/$clean_name"
+        elif [[ -f "$clean_name" ]]; then
+            baserom="$clean_name"
+        fi
+    fi
+fi
+
+if unzip -l "${baserom}" | grep -q "payload.bin"; then
     baserom_type="payload"
     echo $baserom_type > $work_dir/bin/ddevice/romtype.txt
     unpack "Found payload.bin file"
     super_list="vendor mi_ext odm odm_dlkm system system_dlkm vendor_dlkm product product_dlkm system_ext"
     unpack "ROM validation passed."
-elif unzip -l ${baserom} | grep -q "br$";then
+elif unzip -l "${baserom}" | grep -q "br$";then
     baserom_type="br"
     echo $baserom_type > $work_dir/bin/ddevice/romtype.txt
     super_list="system vendor product odm system_ext mi_ext"
     unpack "Found broli file"
     unpack "ROM validation passed."
-elif unzip -l ${baserom} | grep -q "images/super.img*"; then
+elif unzip -l "${baserom}" | grep -q "super.img.*"; then
     unpack "Found super.img.* files"
     is_base_rom_eu=true
     baserom_type="eu"
@@ -100,30 +115,25 @@ elif [[ ${baserom_type} == 'br' ]];then
         done
 elif [[ ${is_base_rom_eu} == true ]];then
     unpack "Unpacking BASEROM [super.img]"
-    python3 bin/lpunpack.py build/baserom/super.img build/baserom/images
-    
-    # Known filesystem partitions to process (ext4/erofs). Raw partitions like abl, boot, etc. are excluded.
-    fs_partitions="system vendor product odm system_ext mi_ext vendor_dlkm system_dlkm odm_dlkm"
-    
-    super_list=""
-    for part in $fs_partitions; do
-        # Check for slot-suffixed _a variant first
-        if [ -f "build/baserom/images/${part}_a.img" ]; then
-            mv "build/baserom/images/${part}_a.img" "build/baserom/images/${part}.img"
-        fi
-        # Remove any _b variant
-        rm -f "build/baserom/images/${part}_b.img"
-        # Only add to list if the file exists and is > 0 bytes
-        if [ -f "build/baserom/images/${part}.img" ] && [ -s "build/baserom/images/${part}.img" ]; then
-            super_list="$super_list $part"
+    python3 bin/lpunpack.py build/baserom/super.img build/baserom/images/ >/dev/null 2>&1
+
+    # Rename _a slot partitions to plain names
+    for i in build/baserom/images/*_a.img; do
+        if [ -f "$i" ]; then
+            mv "$i" "${i%_a.img}.img"
         fi
     done
-    super_list=$(echo $super_list | xargs)
+    # Remove all _b slot placeholders (0 byte dummies)
+    rm -f build/baserom/images/*_b.img
+
+    super_list="system system_ext product vendor odm mi_ext"
 fi
 
 for part in ${super_list}; do
-    extract_partition $work_dir/build/baserom/images/${part}.img $work_dir/build/baserom/images
-    PACK_TYPE=$(cat $work_dir/bin/ddevice/fstype.txt)
+    if [ -f "$work_dir/build/baserom/images/${part}.img" ]; then
+        extract_partition $work_dir/build/baserom/images/${part}.img $work_dir/build/baserom/images
+        PACK_TYPE=$(cat $work_dir/bin/ddevice/fstype.txt 2>/dev/null || echo "erofs")
+    fi
 done
 echo $device_f > $work_dir/bin/ddevice/device_f.txt
 getvar=$(cat $work_dir/bin/ddevice/device_f.txt)
