@@ -1,0 +1,46 @@
+name: Telegram Commit Notify
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 2
+
+      - name: Send Telegram notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          PUSHER="${{ github.actor }}"
+          REPO="${{ github.repository }}"
+          COMMIT_SHA="${{ github.sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_URL="https://github.com/${REPO}/commit/${COMMIT_SHA}"
+          COMPARE_URL="https://github.com/${REPO}/compare/${{ github.event.before }}...${{ github.sha }}"
+
+          # Get commit messages from this push (up to 5)
+          COMMITS=$(git log --oneline -5 --pretty=format:"- %s (%h)" ${{ github.event.before }}..${{ github.sha }} 2>/dev/null || git log --oneline -1 --pretty=format:"- %s (%h)")
+
+          MSG="[HalcyonOS] New push to ${BRANCH} by ${PUSHER}
+
+Commits:
+${COMMITS}
+
+Repo: https://github.com/${REPO}
+Compare: ${COMPARE_URL}"
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHANNEL_ID}" \
+            -d text="${MSG}" \
+            -d parse_mode="" \
+            -d disable_web_page_preview=true
