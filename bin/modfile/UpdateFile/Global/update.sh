@@ -13,8 +13,8 @@ if [[ $regionTYPE == *"Global"* ]]; then
   cp -rf $work_dir/bin/modfile/UpdateFile/Global/CircleToSearchOverlay.apk $work_dir/build/baserom/images/product/overlay/
   cp -rf $work_dir/bin/modfile/UpdateFile/Global/Gemini $work_dir/build/baserom/images/product/priv-app/
   cp -rf $work_dir/bin/modfile/UpdateFile/Global/MiuiCalendar $work_dir/build/baserom/images/product/priv-app/
-  cp -rf $work_dir/bin/modfile/UpdateFile/Global/Nothings.MiuiSystemUIPlugin.apk $work_dir/build/baserom/images/product/overlay/
-  cp -rf $work_dir/bin/modfile/UpdateFile/Global/Nothings.MiuiSystemUI.apk $work_dir/build/baserom/images/product/overlay/
-  cp -rf $work_dir/bin/modfile/UpdateFile/Global/Nothings.HyperPhoneSystemUI.apk $work_dir/build/baserom/images/product/overlay/
+  cp -rf $work_dir/bin/modfile/UpdateFile/Global/HalcyonOS.MiuiSystemUIPlugin.apk $work_dir/build/baserom/images/product/overlay/
+  cp -rf $work_dir/bin/modfile/UpdateFile/Global/HalcyonOS.MiuiSystemUI.apk $work_dir/build/baserom/images/product/overlay/
+  cp -rf $work_dir/bin/modfile/UpdateFile/Global/HalcyonOS.HyperPhoneSystemUI.apk $work_dir/build/baserom/images/product/overlay/
   #Fix icon
 fi

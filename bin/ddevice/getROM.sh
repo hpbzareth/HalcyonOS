@@ -18,14 +18,14 @@ if [ ! -f "${baserom}" ] && [ "$(echo $baserom |grep http)" != "" ]; then
             info "Detected downloaded file: ${baserom}"
         else
             error "Download error! No zip file found after download."
-            exit 1
+            return 1
         fi
     fi
 elif [ -f "${baserom}" ]; then
     info "BASEROM: ${baserom}"
 else
     error "BASEROM: Invalid parameter"
-    exit 1
+    return 1
 fi
 
 
@@ -92,7 +92,7 @@ elif echo "$base_rom_code" | grep -q "V13"; then
     ROM_OS="MIUI"
 else
     echo "Unsupport ROM Exiting..."
-    exit 1
+    return 1
 fi
 
 echo $base_rom_code > $work_dir/bin/ddevice/base_rom_code.txt
