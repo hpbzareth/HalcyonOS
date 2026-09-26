@@ -90,15 +90,33 @@ elif [[ ${baserom_type} == 'br' ]];then
     unpack "File new.dat.br extracted."
 elif [[ ${is_base_rom_eu} == true ]];then
     unpack "Extracting files from BASETROM [super.img]"
-    unzip ${baserom} 'images/*' -d build/baserom >  /dev/null 2>&1 ||error "Extracting [super.img] error"
+    unzip "${baserom}" 'images/*' -d build/baserom > /dev/null 2>&1 || error "Extracting [super.img] error"
+
+    super_dir=$(dirname $(find build/baserom -name "super.img.0" 2>/dev/null | head -n1))
+    if [ -z "$super_dir" ] || [ ! -d "$super_dir" ]; then
+        super_dir="build/baserom/images"
+    fi
+
     unpack "Merging super.img.* into super.img"
-    simg2img build/baserom/images/super.img.* build/baserom/images/super.img
-    rm -rf build/baserom/images/super.img.*
-    mv build/baserom/images/super.img build/baserom/super.img
+    if [ -x "/usr/bin/simg2img" ]; then
+        /usr/bin/simg2img $(ls "$super_dir"/super.img.* | sort -V) build/baserom/super.img
+    else
+        simg2img $(ls "$super_dir"/super.img.* | sort -V) build/baserom/super.img
+    fi
+
+    if [[ ! -s build/baserom/super.img ]]; then
+        error "Merging super.img failed! Output is empty."
+        exit 1
+    fi
+
+    rm -f "$super_dir"/super.img.*
     unpack "[super.img] extracted."
-    if [[ -f build/baserom/images/cust.img.0 ]];then
-        simg2img build/baserom/images/cust.img.* build/baserom/images/cust.img
-        rm -rf build/baserom/images/cust.img.*
+
+    if [[ -n "$(find build/baserom -name 'cust.img.0' 2>/dev/null)" ]]; then
+        cust_file=$(find build/baserom -name "cust.img.0" | head -n1)
+        cust_dir=$(dirname "$cust_file")
+        simg2img ${cust_dir}/cust.img.* build/baserom/images/cust.img 2>/dev/null || true
+        rm -rf ${cust_dir}/cust.img.*
     fi
 fi
 

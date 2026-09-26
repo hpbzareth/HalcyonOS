@@ -5,7 +5,7 @@ mods "Starting Apply Universal File..."
 TARGET_DIR="$work_dir/bin/modfile/Universal"
 noexecute=( "insfile" )
 
-find "$TARGET_DIR" -type f -name "*.sh" | while read -r script; do
+find "$TARGET_DIR" -type f -name "*.sh" | sort | while read -r script; do
     base="$(basename "$script" .sh)"
 
     skip=false

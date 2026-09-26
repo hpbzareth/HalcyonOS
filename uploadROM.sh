@@ -53,9 +53,11 @@ mv -f $work_dir/build/baserom/images/*.img $work_dir/out/${os_type}_${device_cod
 
 # generate dynamic script
 cp -rf $work_dir/bin/script2flash/META-INF $work_dir/out/${os_type}_${device_code}_${base_rom_code}/
-cp -rf $work_dir/bin/script2flash/*.bat $work_dir/out/${os_type}_${device_code}_${base_rom_code}/
-cp -rf $work_dir/bin/script2flash/*.sh $work_dir/out/${os_type}_${device_code}_${base_rom_code}/
-cp -rf $work_dir/bin/script2flash/cust.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
+cp -rf $work_dir/bin/script2flash/*.bat $work_dir/out/${os_type}_${device_code}_${base_rom_code}/ 2>/dev/null || true
+cp -rf $work_dir/bin/script2flash/*.sh $work_dir/out/${os_type}_${device_code}_${base_rom_code}/ 2>/dev/null || true
+if [ -f "$work_dir/bin/script2flash/cust.img" ]; then
+    cp -rf $work_dir/bin/script2flash/cust.img $work_dir/out/${os_type}_${device_code}_${base_rom_code}/images/
+fi
 echo $device_f > $work_dir/out/${os_type}_${device_code}_${base_rom_code}/META-INF/Data/DeviceCode
 repack "Done"
 
